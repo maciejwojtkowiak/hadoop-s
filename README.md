@@ -92,6 +92,7 @@ cat data/datasource1/*.csv | python3 mapreduce/mapper.py | sort | python3 mapred
 
 ## 📚 Dokumentacja i Samouczki
 
+* [TUTORIAL_OGOLNY_HADOOP_HIVE_DOCKER.md](TUTORIAL_OGOLNY_HADOOP_HIVE_DOCKER.md) – **Kompleksowy podręcznik architektoniczny:** Jak działa Hadoop Streaming, model MapReduce, Apache Hive, mechanizm SerDe oraz usługi kontenera Docker (HDFS NameNode/DataNode, YARN, HiveServer2, Metastore)
 * [PELNY_TUTORIAL_I_KOMENDY.md](PELNY_TUTORIAL_I_KOMENDY.md) – Analiza kodu linijka po linijce, różnice Streaming vs Classic, komendy Beeline & Streaming
 * [RECENZJA_TUTORIAL.md](RECENZJA_TUTORIAL.md) – Jak oceniać projekty wg oficjalnych 35 kryteriów i unikać pułapek
 * [SCIAGA_KOMEND.md](SCIAGA_KOMEND.md) – Gotowe komendy do HDFS, MapReduce, Hive i Dockera
