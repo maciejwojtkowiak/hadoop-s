@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hadoop Streaming vs Classic – Interaktywna Platforma Edukacyjna</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    .badge { display: inline-flex; align-items: center; justify-content: center; border-radius: 9999px; font-weight: 700; }
+    .bar-anim { transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
+    pre code { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: var(--card); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  </style>
+</head>
+<body class="bg-[var(--background)] text-[var(--foreground)] antialiased p-3 sm:p-6 m-0 font-sans leading-relaxed">
+  <div class="max-w-6xl mx-auto space-y-6">
+
+    <!-- Top Navigation & Branding -->
+    <header class="flex flex-col md:flex-row md:items-center justify-between pb-4 border-b border-[var(--card-border)] gap-3">
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="text-2xl">⚡</span>
+          <h1 class="text-2xl font-bold tracking-tight">Hadoop: Streaming vs Classic</h1>
+        </div>
+        <p class="text-xs text-[var(--muted-foreground)] mt-1">
+          Interaktywny samouczek architektury, porównanie kodu side-by-side, inspekcja wyników i analiza błędów
+        </p>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="text-xs px-3 py-1 rounded-full bg-[var(--accent)] border border-[var(--border)] font-mono font-medium">
+          Zestaw 0 • Hadoop 3.3.6 • Hive 3.1.3
+        </span>
+      </div>
+    </header>
+
+    <!-- Main Navigation Tabs -->
+    <nav class="grid grid-cols-2 md:grid-cols-5 gap-2 text-xs">
+      <button id="nav-btn-1" onclick="selectTab(1)" class="p-3 rounded-lg border text-left bg-[var(--card)] border-[var(--primary)] shadow-sm transition">
+        <div class="font-bold flex items-center gap-1.5 text-[var(--primary)]">
+          <span>🥊</span> 1. Streaming vs Classic
+        </div>
+        <div class="text-[var(--muted-foreground)] text-[11px] mt-0.5">Pojedynek, architektura, kod</div>
+      </button>
+
+      <button id="nav-btn-2" onclick="selectTab(2)" class="p-3 rounded-lg border text-left bg-[var(--card)] border-[var(--border)] hover:border-[var(--primary)] transition">
+        <div class="font-bold flex items-center gap-1.5">
+          <span>🔄</span> 2. Przepływ Danych
+        </div>
+        <div class="text-[var(--muted-foreground)] text-[11px] mt-0.5">Mapper → Combiner → Reducer</div>
+      </button>
+
+      <button id="nav-btn-3" onclick="selectTab(3)" class="p-3 rounded-lg border text-left bg-[var(--card)] border-[var(--border)] hover:border-[var(--primary)] transition">
+        <div class="font-bold flex items-center gap-1.5">
+          <span>📊</span> 3. Wyniki (120 & 20)
+        </div>
+        <div class="text-[var(--muted-foreground)] text-[11px] mt-0.5">Dane rzeczywiste, ranking Hive</div>
+      </button>
+
+      <button id="nav-btn-4" onclick="selectTab(4)" class="p-3 rounded-lg border text-left bg-[var(--card)] border-[var(--border)] hover:border-[var(--primary)] transition">
+        <div class="font-bold flex items-center gap-1.5">
+          <span>⚠️</span> 4. Laboratorium Błędów
+        </div>
+        <div class="text-[var(--muted-foreground)] text-[11px] mt-0.5">Typowe pułapki na recenzji</div>
+      </button>
+
+      <button id="nav-btn-5" onclick="selectTab(5)" class="p-3 rounded-lg border text-left bg-[var(--card)] border-[var(--border)] hover:border-[var(--primary)] transition">
+        <div class="font-bold flex items-center gap-1.5">
+          <span>💻</span> 5. Konsola & Komendy
+        </div>
+        <div class="text-[var(--muted-foreground)] text-[11px] mt-0.5">Szybkie komendy z kopiowaniem</div>
+      </button>
+    </nav>
+
+    <!-- ============================================================== -->
+    <!-- TAB 1: STREAMING VS CLASSIC (COMPREHENSIVE COMPARISON)          -->
+    <!-- ============================================================== -->
+    <section id="tab-content-1" class="space-y-6">
+      
+      <!-- Architectural Explanation Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        
+        <!-- Hadoop Streaming Card -->
+        <div class="p-4 rounded-xl bg-[var(--card)] border border-[var(--border)] space-y-3">
+          <div class="flex items-center justify-between pb-2 border-b border-[var(--border)]">
+            <h3 class="font-bold text-sm text-[var(--primary)] flex items-center gap-2">
+              <span>🐍</span> Hadoop Streaming (np. Python, Bash, Node.js)
+            </h3>
+            <span class="text-xs px-2 py-0.5 rounded bg-[var(--primary)] text-[var(--primary-foreground)] font-mono">Pipes / STDIN</span>
+          </div>
+
+          <p class="text-xs text-[var(--muted-foreground)]">
+            Hadoop uruchamia Twój program jako <strong>osobny proces systemowy</strong> (fork/exec). Komunikacja odbywa się przez standardowe strumienie Unix (standard input/output).
+          </p>
+
+          <div class="p-3 bg-[var(--background)] rounded-lg border border-[var(--border)] text-xs font-mono space-y-1">
+            <div class="text-[var(--primary)] font-bold">// Jak Hadoop przekazuje dane do Mappera:</div>
+            <div>stdin &nbsp;⟶ &nbsp;[Wiersz tekstu CSV] &nbsp;⟶ &nbsp;sys.stdin</div>
+            <div>stdout ⟵ &nbsp;[klucz	wartość
+] &nbsp;⟵ &nbsp;print()</div>
+          </div>
+
+          <div class="space-y-1.5 text-xs">
+            <div class="flex items-start gap-2">
+              <span class="text-[var(--success)] font-bold">✓</span>
+              <span><strong>Uniwersalność językowa:</strong> Dowolny język (Python, Ruby, Perl, Bash, C++).</span>
+            </div>
+            <div class="flex items-start gap-2">
+              <span class="text-[var(--success)] font-bold">✓</span>
+              <span><strong>Brak kompilacji:</strong> Zmieniasz plik `.py` i od razu uruchamiasz zadanie.</span>
+            </div>
+            <div class="flex items-start gap-2">
+              <span class="text-[var(--warning)] font-bold">⚠</span>
+              <span><strong>Overhead IPC:</strong> Koszt serializacji tekstu i przełączania kontekstu procesów Unix.</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Hadoop Classic (Java) Card -->
+        <div class="p-4 rounded-xl bg-[var(--card)] border border-[var(--border)] space-y-3">
+          <div class="flex items-center justify-between pb-2 border-b border-[var(--border)]">
+            <h3 class="font-bold text-sm text-[var(--accent-foreground)] flex items-center gap-2">
+              <span>☕</span> Hadoop Classic (Natywne Java API)
+            </h3>
+            <span class="text-xs px-2 py-0.5 rounded bg-[var(--secondary)] text-[var(--secondary-foreground)] font-mono">Natywne JVM</span>
+          </div>
+
+          <p class="text-xs text-[var(--muted-foreground)]">
+            Zadanie wykonuje się <strong>bezpośrednio wewnątrz wirtualnej maszyny Java (JVM)</strong> TaskTrackera / Yarn NodeManagera. Klasy dziedziczą po <code>Mapper</code> i <code>Reducer</code>.
+          </p>
+
+          <div class="p-3 bg-[var(--background)] rounded-lg border border-[var(--border)] text-xs font-mono space-y-1">
+            <div class="text-[var(--accent-foreground)] font-bold">// Przekazywanie obiektów w pamięci JVM:</div>
+            <div>Context.write(K2 key, V2 value) &nbsp;⟶ &nbsp;obiekty Writable</div>
+            <div>Brak rzutowania stringów – silne, statyczne typowanie</div>
+          </div>
+
+          <div class="space-y-1.5 text-xs">
+            <div class="flex items-start gap-2">
+              <span class="text-[var(--success)] font-bold">✓</span>
+              <span><strong>Maksymalna wydajność:</strong> Zero narzutu na procesy zewnętrzne i konwersję IPC.</span>
+            </div>
+            <div class="flex items-start gap-2">
+              <span class="text-[var(--success)] font-bold">✓</span>
+              <span><strong>Zaawansowana kontrola:</strong> Własne partycjonery, WritableComparable, binarna serializacja.</span>
+            </div>
+            <div class="flex items-start gap-2">
+              <span class="text-[var(--warning)] font-bold">⚠</span>
+              <span><strong>Złożoność budowy:</strong> Wymaga Mavena, kompilacji do `.jar` i obsługi wyjątków Java.</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Side-by-Side Code Comparator -->
+      <div class="p-4 rounded-xl bg-[var(--card)] border border-[var(--border)] space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-[var(--border)] gap-2">
+          <div>
+            <h3 class="font-bold text-sm flex items-center gap-2">
+              <span>🔍</span> Porównanie Kodu Obok Siebie (Side-by-Side Code Inspector)
+            </h3>
+            <p class="text-xs text-[var(--muted-foreground)]">Zobacz dokładnie, jak to samo zadanie realizowane jest w Pythonie i Javie</p>
+          </div>
+          <div class="flex items-center gap-1.5 bg-[var(--background)] p-1 rounded-lg border border-[var(--border)] text-xs font-mono">
+            <button id="code-btn-map" onclick="switchCode('map')" class="px-2.5 py-1 rounded bg-[var(--primary)] text-[var(--primary-foreground)] font-bold">Mapper</button>
+            <button id="code-btn-comb" onclick="switchCode('comb')" class="px-2.5 py-1 rounded hover:bg-[var(--accent)]">Combiner</button>
+            <button id="code-btn-red" onclick="switchCode('red')" class="px-2.5 py-1 rounded hover:bg-[var(--accent)]">Reducer</button>
+            <button id="code-btn-run" onclick="switchCode('run')" class="px-2.5 py-1 rounded hover:bg-[var(--accent)]">Uruchomienie</button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-3 text-xs">
+          <!-- Left: Streaming -->
+          <div class="space-y-1.5">
+            <div class="flex items-center justify-between px-2 text-[11px] font-bold text-[var(--primary)]">
+              <span>🐍 Hadoop Streaming (Python 3)</span>
+              <span id="label-left-file" class="font-mono text-[var(--muted-foreground)]">mapper.py</span>
+            </div>
+            <pre class="bg-[var(--background)] p-3 rounded-lg border border-[var(--border)] overflow-x-auto max-h-96 text-[11px] font-mono leading-relaxed"><code id="code-left"></code></pre>
+          </div>
+
+          <!-- Right: Classic -->
+          <div class="space-y-1.5">
+            <div class="flex items-center justify-between px-2 text-[11px] font-bold text-[var(--accent-foreground)]">
+              <span>☕ Hadoop Classic (Java API)</span>
+              <span id="label-right-file" class="font-mono text-[var(--muted-foreground)]">ReservationMapper.java</span>
+            </div>
+            <pre class="bg-[var(--background)] p-3 rounded-lg border border-[var(--border)] overflow-x-auto max-h-96 text-[11px] font-mono leading-relaxed"><code id="code-right"></code></pre>
+          </div>
+        </div>
+
+        <!-- Educational Insight Box -->
+        <div id="code-explanation" class="p-3 bg-[var(--background)] rounded-lg border border-[var(--border)] text-xs text-[var(--muted-foreground)] space-y-1">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+
+      <!-- Feature Matrix Table -->
+      <div class="p-4 rounded-xl bg-[var(--card)] border border-[var(--border)] space-y-3">
+        <h3 class="font-bold text-sm">📋 Tabela Różnic: Kiedy Wybrać Który Wariant?</h3>
+        
+        <div class="overflow-x-auto text-xs border border-[var(--border)] rounded-lg">
+          <table class="w-full text-left">
+            <thead class="bg-[var(--background)] border-b border-[var(--border)] text-[var(--muted-foreground)]">
+              <tr>
+                <th class="py-2.5 px-3 font-semibold">Cecha / Aspekt</th>
+                <th class="py-2.5 px-3 font-semibold text-[var(--primary)]">Hadoop Streaming (Python)</th>
+                <th class="py-2.5 px-3 font-semibold text-[var(--accent-foreground)]">Hadoop Classic (Java)</th>
+                <th class="py-2.5 px-3 font-semibold">Wpływ na ocenę / projekt</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-[var(--border)]">
+              <tr>
+                <td class="py-2 px-3 font-medium">Kanał komunikacji</td>
+                <td class="py-2 px-3 font-mono">stdin / stdout (tekst)</td>
+                <td class="py-2 px-3 font-mono">Metoda map() w JVM</td>
+                <td class="py-2 px-3 text-[var(--muted-foreground)]">W Streaming klucz i wartość rozdziela tabulator <code>	</code></td>
+              </tr>
+              <tr>
+                <td class="py-2 px-3 font-medium">Typowanie danych</td>
+                <td class="py-2 px-3">Dynamiczne (parsujesz ręcznie w kodzie)</td>
+                <td class="py-2 px-3">Statyczne (<code>Text</code>, <code>LongWritable</code> itp.)</td>
+                <td class="py-2 px-3 text-[var(--muted-foreground)]">W Streaming musisz sam obsłużyć <code>try...except ValueError</code></td>
+              </tr>
+              <tr>
+                <td class="py-2 px-3 font-medium">Combiner</td>
+                <td class="py-2 px-3">Musi zachować format wyjścia mappera</td>
+                <td class="py-2 px-3">Klasa dziedzicząca po <code>Reducer</code></td>
+                <td class="py-2 px-3 text-[var(--muted-foreground)]">Brak lub błędny Combiner odejmuje punkty w M06/M07</td>
+              </tr>
+              <tr>
+                <td class="py-2 px-3 font-medium">Szybkość prototypowania</td>
+                <td class="py-2 px-3 font-bold text-[var(--success)]">Bardzo wysoka (test w 1 linijce bash)</td>
+                <td class="py-2 px-3 text-[var(--warning)]">Średnia (wymaga kompilacji JAR)</td>
+                <td class="py-2 px-3 text-[var(--muted-foreground)]">Streaming pozwala na natychmiastowe testy lokalne</td>
+              </tr>
+              <tr>
+                <td class="py-2 px-3 font-medium">Wydajność wykonania</td>
+                <td class="py-2 px-3 text-[var(--warning)]">Mniejsza (narzut procesów zewnętrznych)</td>
+                <td class="py-2 px-3 font-bold text-[var(--success)]">Maksymalna (wewnętrzne wątki JVM)</td>
+                <td class="py-2 px-3 text-[var(--muted-foreground)]">Na małych zbiorach różnica jest niezauważalna</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- TAB 2: DATA FLOW ARCHITECTURE                                  -->
+    <!-- ============================================================== -->
+    <section id="tab-content-2" class="hidden space-y-4">
+      <div class="p-4 rounded-xl bg-[var(--card)] border border-[var(--border)] space-y-4">
+        <h3 class="font-bold text-sm flex items-center gap-2">
+          <span>🔄</span> Szczegółowy Cykl Życia Rekordu w Hadoop MapReduce
+        </h3>
+
+        <!-- Interactive Flow Steps -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-3 text-xs">
+          <div class="p-3 bg-[var(--background)] rounded-lg border border-[var(--border)] space-y-2">
+            <div class="font-bold text-[var(--primary)] flex items-center gap-1.5">
+              <span class="badge w-5 h-5 bg-[var(--primary)] text-[var(--primary-foreground)] text-[10px]">1</span>
+              <span>Input Split & Read</span>
+            </div>
+            <p class="text-[var(--muted-foreground)] text-[11px]">
+              HDFS dzieli plik `reservations.csv` na bloki. <code>LineRecordReader</code> czyta wiersze i przekazuje je do Mappera.
+            </p>
+          </div>
+
+          <div class="p-3 bg-[var(--background)] rounded-lg border border-[var(--border)] space-y-2">
+            <div class="font-bold text-[var(--accent-foreground)] flex items-center gap-1.5">
+              <span class="badge w-5 h-5 bg-[var(--secondary)] text-[var(--secondary-foreground)] text-[10px]">2</span>
+              <span>Map & Local Combine</span>
+            </div>
+            <p class="text-[var(--muted-foreground)] text-[11px]">
+              Mapper parsuje rok i status. Combiner łączy cząstkowe sumy na węźle, zmniejszając ruch sieciowy (Shuffle).
+            </p>
+          </div>
+
+          <div class="p-3 bg-[var(--background)] rounded-lg border border-[var(--border)] space-y-2">
+            <div class="font-bold text-[var(--warning)] flex items-center gap-1.5">
+              <span class="badge w-5 h-5 bg-[var(--warning)] text-white text-[10px]">3</span>
+              <span>Shuffle & Sort</span>
+            </div>
+            <p class="text-[var(--muted-foreground)] text-[11px]">
+              Hadoop automatycznie sortuje rekordy według klucza <code>(hotel_id, year)</code> i kieruje wszystkie te same klucze do jednego Reducera.
+            </p>
+          </div>
+
+          <div class="p-3 bg-[var(--background)] rounded-lg border border-[var(--border)] space-y-2">
+            <div class="font-bold text-[var(--success)] flex items-center gap-1.5">
+              <span class="badge w-5 h-5 bg-[var(--success)] text-white text-[10px]">4</span>
+              <span>Reduce & Final Output</span>
+            </div>
+            <p class="text-[var(--muted-foreground)] text-[11px]">
+              Reducer sumuje ostateczną liczbę i wylicza <code>avg_price = sum_price / count</code>. Wynik ląduje w HDFS dla Hive.
+            </p>
+          </div>
+        </div>
+
+        <div class="p-4 bg-[var(--background)] rounded-lg border border-[var(--border)] text-xs font-mono space-y-2">
+          <div class="font-bold text-[var(--primary)]">Przykład transformacji pojedynczego rekordu:</div>
+          <div class="text-[var(--muted-foreground)]">Wejście CSV: <code>...,HOTEL0001,GUEST1,2024-03-20T15:00,...,780.00,Cancelled</code></div>
+          <div>Mapper emituje ⟶ <code>HOTEL0001	2024 	 780.00,1</code></div>
+          <div>Combiner emituje ⟶ <code>HOTEL0001	2024 	 1,780.00,1</code> (liczność, suma, anulacje)</div>
+          <div>Reducer emituje ⟶ <code>HOTEL0001	2024 	 102 	 981.17 	 34</code></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- TAB 3: RESULTS EXPLORER (120 MR & 20 HIVE)                      -->
+    <!-- ============================================================== -->
+    <section id="tab-content-3" class="hidden space-y-5">
+      
+      <!-- Benchmark Card from Course Repository -->
+      <div class="p-4 rounded-xl bg-[var(--card)] border border-[var(--primary)] shadow-sm space-y-2">
+        <div class="flex items-center justify-between">
+          <h4 class="font-bold text-xs flex items-center gap-1.5 text-[var(--primary)]">
+            <span>🎯</span> Wzorzec formatu ze specyfikacji kursu (expected_results-2026-10.md)
+          </h4>
+          <span class="text-[11px] font-mono px-2 py-0.5 rounded bg-[var(--accent)] text-[var(--foreground)] border border-[var(--border)]">
+            GitHub: ProjectMapReduceHive
+          </span>
+        </div>
+        <p class="text-xs text-[var(--muted-foreground)]">
+          Specyfikacja wymaga dokładnie <strong>120 grup w MapReduce</strong> oraz <strong>20 wierszy w Hive (dla roku 2024)</strong>. Poniżej znajdują się rzeczywiste wyniki przeliczone na pełnym zbiorze 10 000 rezerwacji z Twojego pliku zip:
+        </p>
+      </div>
+
+      <!-- Hive 2024 Ranking Header -->
+      <div class="p-4 rounded-xl bg-[var(--card)] border border-[var(--border)] space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-[var(--border)] gap-2">
+          <div>
+            <h3 class="font-bold text-sm flex items-center gap-2">
+              <span>🏆</span> Wyniki Końcowe: Ranking Hoteli w 2024 Roku (20 hoteli)
+            </h3>
+            <p class="text-xs text-[var(--muted-foreground)]">
+              Wyznaczone przez Apache Hive (złączenie z liczbą pokoi, filtr 2024, funkcja <code>RANK()</code>)
+            </p>
+          </div>
+          <span class="text-xs px-2.5 py-1 rounded bg-[var(--success)] text-white font-mono">
+            Zgodność ze specyfikacją: 100%
+          </span>
+        </div>
+
+        <!-- Table -->
+        <div class="overflow-x-auto text-xs font-mono max-h-72 border border-[var(--border)] rounded-lg">
+          <table class="w-full">
+            <thead class="sticky top-0 bg-[var(--card)] border-b border-[var(--border)] text-[var(--muted-foreground)]">
+              <tr>
+                <th class="py-2 px-2 text-center">rank</th>
+                <th class="py-2 px-2.5 text-left">hotel_name</th>
+                <th class="py-2 px-2 text-center">region</th>
+                <th class="py-2 px-2 text-right">total_reservations</th>
+                <th class="py-2 px-2 text-right">avg_price</th>
+                <th class="py-2 px-2 text-right">cancelled_ratio</th>
+                <th class="py-2 px-2 text-right">rooms</th>
+                <th class="py-2 px-2.5 text-right">ratio (rez./pok.)</th>
+              </tr>
+            </thead>
+            <tbody id="hive-table-body"></tbody>
+          </table>
+        </div>
+
+        <!-- Visual Bar Chart -->
+        <div class="space-y-2 pt-2">
+          <h4 class="font-bold text-xs flex items-center gap-1.5">
+            <span>📊</span> Współczynnik obłożenia (rezerwacje w 2024 / liczba pokoi):
+          </h4>
+          <div id="hive-bars-container" class="space-y-1.5 text-xs"></div>
+        </div>
+
+        <!-- Raw SerDe Output -->
+        <div class="space-y-1.5 pt-2">
+          <div class="flex items-center justify-between">
+            <h4 class="font-bold text-xs flex items-center gap-1.5">
+              <span>📄</span> Surowy strumień wyjściowy JSON SerDe (HDFS /user/root/output/hive_results):
+            </h4>
+            <span class="text-[11px] text-[var(--muted-foreground)] font-mono">org.apache.hive.hcatalog.data.JsonSerDe</span>
+          </div>
+          <pre id="json-raw-box" class="bg-[var(--background)] p-3 rounded-lg font-mono text-[11px] text-[var(--muted-foreground)] border border-[var(--border)] overflow-x-auto max-h-32"></pre>
+        </div>
+      </div>
+
+      <!-- MapReduce 120 Groups Table -->
+      <div class="p-4 rounded-xl bg-[var(--card)] border border-[var(--border)] space-y-3">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-[var(--border)] gap-2">
+          <div>
+            <h3 class="font-bold text-sm">Etap MapReduce (3) – Wszystkie 120 grup</h3>
+            <p class="text-xs text-[var(--muted-foreground)]">Statystyki rezerwacji per (hotel_id, year)</p>
+          </div>
+          <div class="flex flex-wrap items-center gap-2">
+            <input type="text" id="mr-search-box" oninput="updateMrView()" placeholder="Szukaj hotelu..." class="bg-[var(--background)] border border-[var(--border)] rounded px-2.5 py-1 text-xs font-mono">
+            <select id="mr-year-filter" onchange="updateMrView()" class="bg-[var(--background)] border border-[var(--border)] rounded px-2.5 py-1 text-xs font-mono">
+              <option value="ALL">Wszystkie lata (120)</option>
+              <option value="2024" selected>2024 (20)</option>
+              <option value="2023">2023 (20)</option>
+              <option value="2022">2022 (20)</option>
+              <option value="2021">2021 (20)</option>
+              <option value="2020">2020 (20)</option>
+              <option value="2019">2019 (20)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto text-xs font-mono max-h-64 border border-[var(--border)] rounded-lg">
+          <table class="w-full">
+            <thead class="sticky top-0 bg-[var(--card)] border-b border-[var(--border)] text-[var(--muted-foreground)]">
+              <tr>
+                <th class="py-1.5 px-2.5 text-left">hotel_id</th>
+                <th class="py-1.5 px-2.5 text-left">nazwa hotelu</th>
+                <th class="py-1.5 px-2.5 text-center">year</th>
+                <th class="py-1.5 px-2.5 text-right">reservation_count</th>
+                <th class="py-1.5 px-2.5 text-right">avg_price</th>
+                <th class="py-1.5 px-2.5 text-right">cancelled_count</th>
+              </tr>
+            </thead>
+            <tbody id="mr-table-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- TAB 4: COMMON ERRORS & REVIEW GUIDE                            -->
+    <!-- ============================================================== -->
+    <section id="tab-content-4" class="hidden space-y-4">
+      <div class="p-4 rounded-xl bg-[var(--card)] border border-[var(--border)] space-y-4">
+        <h3 class="font-bold text-sm flex items-center gap-2">
+          <span>⚠️</span> Laboratorium Błędów: Co Najczęściej Psuje Ocenę?
+        </h3>
+        <p class="text-xs text-[var(--muted-foreground)]">
+          Kliknij dowolny błąd, aby zobaczyć dlaczego odejmuje punkty i jak wygląda prawidłowy kod.
+        </p>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+          
+          <!-- Error 1 -->
+          <div onclick="showErrorDetail(1)" class="p-3 bg-[var(--background)] rounded-lg border border-[var(--border)] hover:border-[var(--primary)] cursor-pointer transition space-y-1">
+            <div class="font-bold text-[var(--error)] flex items-center gap-1.5">
+              <span>❌ Błąd 1:</span> Brak pominięcia nagłówka CSV (M01)
+            </div>
+            <p class="text-[var(--muted-foreground)]">Wiersz nagłówkowy wpada do obliczeń i wywala <code>ValueError: could not convert string to float: 'price'</code>.</p>
+          </div>
+
+          <!-- Error 2 -->
+          <div onclick="showErrorDetail(2)" class="p-3 bg-[var(--background)] rounded-lg border border-[var(--border)] hover:border-[var(--primary)] cursor-pointer transition space-y-1">
+            <div class="font-bold text-[var(--error)] flex items-center gap-1.5">
+              <span>❌ Błąd 2:</span> Buforowanie w pamięci (M05)
+            </div>
+            <p class="text-[var(--muted-foreground)]">Użycie <code>records.append(line)</code> w mapperze łamie przetwarzanie strumieniowe i zabija pamięć klastra.</p>
+          </div>
+
+          <!-- Error 3 -->
+          <div onclick="showErrorDetail(3)" class="p-3 bg-[var(--background)] rounded-lg border border-[var(--border)] hover:border-[var(--primary)] cursor-pointer transition space-y-1">
+            <div class="font-bold text-[var(--error)] flex items-center gap-1.5">
+              <span>❌ Błąd 3:</span> Liczenie średniej w Mapperze (M03)
+            </div>
+            <p class="text-[var(--muted-foreground)]">Średnia nie jest dystrybutywna. Mapper musi emitować sumę i liczność, a nie gotową średnią.</p>
+          </div>
+
+          <!-- Error 4 -->
+          <div onclick="showErrorDetail(4)" class="p-3 bg-[var(--background)] rounded-lg border border-[var(--border)] hover:border-[var(--primary)] cursor-pointer transition space-y-1">
+            <div class="font-bold text-[var(--error)] flex items-center gap-1.5">
+              <span>❌ Błąd 4:</span> Użycie LOAD DATA w Hive (H02)
+            </div>
+            <p class="text-[var(--muted-foreground)]"><code>LOAD DATA INPATH</code> fizycznie przenosi pliki w HDFS i niszczy dane wejściowe. Wymagane jest <code>EXTERNAL TABLE ... LOCATION</code>.</p>
+          </div>
+
+          <!-- Error 5 -->
+          <div onclick="showErrorDetail(5)" class="p-3 bg-[var(--background)] rounded-lg border border-[var(--border)] hover:border-[var(--primary)] cursor-pointer transition space-y-1">
+            <div class="font-bold text-[var(--error)] flex items-center gap-1.5">
+              <span>❌ Błąd 5:</span> Sklejanie JSON przez CONCAT (H15)
+            </div>
+            <p class="text-[var(--muted-foreground)]">Ręczne tworzenie JSON stringa. Wymagane jest oficjalne <code>org.apache.hive.hcatalog.data.JsonSerDe</code>.</p>
+          </div>
+
+          <!-- Error 6 -->
+          <div onclick="showErrorDetail(6)" class="p-3 bg-[var(--background)] rounded-lg border border-[var(--border)] hover:border-[var(--primary)] cursor-pointer transition space-y-1">
+            <div class="font-bold text-[var(--error)] flex items-center gap-1.5">
+              <span>❌ Błąd 6:</span> Użycie ROW_NUMBER() zamiast RANK() (H09)
+            </div>
+            <p class="text-[var(--muted-foreground)]">W przypadku remisów obłożenia hotele muszą otrzymać tę samą pozycję (1, 2, 2, 4), a nie kolejne numery.</p>
+          </div>
+
+        </div>
+
+        <!-- Detailed Error Modal / View -->
+        <div id="error-view-box" class="p-4 bg-[var(--background)] rounded-lg border border-[var(--border)] space-y-3 hidden">
+          <div class="flex items-center justify-between pb-2 border-b border-[var(--border)]">
+            <h4 id="error-detail-title" class="font-bold text-sm text-[var(--primary)]"></h4>
+            <span id="error-detail-rule" class="font-mono text-xs text-[var(--muted-foreground)]"></span>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+            <div class="p-3 rounded bg-[var(--card)] border border-[var(--error)] space-y-1">
+              <div class="font-bold text-[var(--error)]">❌ Źle (Błędny Kod):</div>
+              <pre class="overflow-x-auto text-[11px] font-mono text-[var(--code-foreground)]"><code id="error-bad-code"></code></pre>
+            </div>
+            <div class="p-3 rounded bg-[var(--card)] border border-[var(--success)] space-y-1">
+              <div class="font-bold text-[var(--success)]">✅ Dobrze (Poprawne Rozwiązanie):</div>
+              <pre class="overflow-x-auto text-[11px] font-mono text-[var(--code-foreground)]"><code id="error-good-code"></code></pre>
+            </div>
+          </div>
+          <div id="error-detail-why" class="text-xs text-[var(--muted-foreground)]"></div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- TAB 5: CLI COMMAND CHEATSHEET                                   -->
+    <!-- ============================================================== -->
+    <section id="tab-content-5" class="hidden space-y-4">
+      <div class="p-4 rounded-xl bg-[var(--card)] border border-[var(--border)] space-y-4">
+        <h3 class="font-bold text-sm flex items-center gap-2">
+          <span>💻</span> Interaktywna Konsola Komend (Kliknij, aby skopiować)
+        </h3>
+
+        <div class="space-y-3 text-xs">
+          
+          <!-- Cmd 1 -->
+          <div class="p-3 bg-[var(--background)] rounded-lg border border-[var(--border)] space-y-1.5">
+            <div class="flex items-center justify-between">
+              <span class="font-bold text-[var(--primary)]">1. Test lokalny potoku w 1 linijce (bez Hadoop):</span>
+              <button onclick="copyCmd(this)" class="px-2 py-0.5 rounded bg-[var(--accent)] border border-[var(--border)] hover:bg-[var(--primary)] hover:text-white transition">Kopiuj</button>
+            </div>
+            <pre class="p-2 rounded bg-[var(--card)] font-mono text-[11px] overflow-x-auto">cat data/datasource1/*.csv | python3 mapreduce/mapper.py | sort | python3 mapreduce/combiner.py | sort | python3 mapreduce/reducer.py | head -15</pre>
+          </div>
+
+          <!-- Cmd 2 -->
+          <div class="p-3 bg-[var(--background)] rounded-lg border border-[var(--border)] space-y-1.5">
+            <div class="flex items-center justify-between">
+              <span class="font-bold text-[var(--primary)]">2. Uruchomienie Hadoop Streaming z Combinerem:</span>
+              <button onclick="copyCmd(this)" class="px-2 py-0.5 rounded bg-[var(--accent)] border border-[var(--border)] hover:bg-[var(--primary)] hover:text-white transition">Kopiuj</button>
+            </div>
+            <pre class="p-2 rounded bg-[var(--card)] font-mono text-[11px] overflow-x-auto">mapred streaming -files /opt/mapreduce/mapper.py,/opt/mapreduce/combiner.py,/opt/mapreduce/reducer.py -input /user/root/input/reservations -output /user/root/output/mr_results -mapper "python3 mapper.py" -combiner "python3 combiner.py" -reducer "python3 reducer.py"</pre>
+          </div>
+
+          <!-- Cmd 3 -->
+          <div class="p-3 bg-[var(--background)] rounded-lg border border-[var(--border)] space-y-1.5">
+            <div class="flex items-center justify-between">
+              <span class="font-bold text-[var(--primary)]">3. Uruchomienie Apache Hive przez Beeline:</span>
+              <button onclick="copyCmd(this)" class="px-2 py-0.5 rounded bg-[var(--accent)] border border-[var(--border)] hover:bg-[var(--primary)] hover:text-white transition">Kopiuj</button>
+            </div>
+            <pre class="p-2 rounded bg-[var(--card)] font-mono text-[11px] overflow-x-auto">beeline -u "jdbc:hive2://localhost:10000/default" -n root --hivevar input_dir3="/user/root/output/mr_results" --hivevar input_dir4="/user/root/input/hotels" --hivevar output_dir6="/user/root/output/hive_results" -f /opt/hive_scripts/hotel_ranking.hql</pre>
+          </div>
+
+          <!-- Cmd 4 -->
+          <div class="p-3 bg-[var(--background)] rounded-lg border border-[var(--border)] space-y-1.5">
+            <div class="flex items-center justify-between">
+              <span class="font-bold text-[var(--primary)]">4. Weryfikacja formatu JSON SerDe w HDFS:</span>
+              <button onclick="copyCmd(this)" class="px-2 py-0.5 rounded bg-[var(--accent)] border border-[var(--border)] hover:bg-[var(--primary)] hover:text-white transition">Kopiuj</button>
+            </div>
+            <pre class="p-2 rounded bg-[var(--card)] font-mono text-[11px] overflow-x-auto">hdfs dfs -cat /user/root/output/hive_results/* | head -20</pre>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <script>
+    const MR_DATA = [{"hotel_id": "HOTEL0001", "hotel_name": "Schinner Group Hotel", "year": "2020", "count": 21, "avg": 958.15, "canc": 9}, {"hotel_id": "HOTEL0001", "hotel_name": "Schinner Group Hotel", "year": "2021", "count": 88, "avg": 1047.52, "canc": 32}, {"hotel_id": "HOTEL0001", "hotel_name": "Schinner Group Hotel", "year": "2022", "count": 114, "avg": 1049.36, "canc": 49}, {"hotel_id": "HOTEL0001", "hotel_name": "Schinner Group Hotel", "year": "2023", "count": 110, "avg": 898.94, "canc": 42}, {"hotel_id": "HOTEL0001", "hotel_name": "Schinner Group Hotel", "year": "2024", "count": 102, "avg": 981.17, "canc": 34}, {"hotel_id": "HOTEL0001", "hotel_name": "Schinner Group Hotel", "year": "2025", "count": 76, "avg": 1032.19, "canc": 24}, {"hotel_id": "HOTEL0002", "hotel_name": "Fahey Bradtke and Goodwin Hotel", "year": "2020", "count": 26, "avg": 1226.61, "canc": 11}, {"hotel_id": "HOTEL0002", "hotel_name": "Fahey Bradtke and Goodwin Hotel", "year": "2021", "count": 93, "avg": 1085.55, "canc": 24}, {"hotel_id": "HOTEL0002", "hotel_name": "Fahey Bradtke and Goodwin Hotel", "year": "2022", "count": 101, "avg": 1049.04, "canc": 27}, {"hotel_id": "HOTEL0002", "hotel_name": "Fahey Bradtke and Goodwin Hotel", "year": "2023", "count": 88, "avg": 1070.16, "canc": 37}, {"hotel_id": "HOTEL0002", "hotel_name": "Fahey Bradtke and Goodwin Hotel", "year": "2024", "count": 103, "avg": 1052.92, "canc": 39}, {"hotel_id": "HOTEL0002", "hotel_name": "Fahey Bradtke and Goodwin Hotel", "year": "2025", "count": 60, "avg": 1153.35, "canc": 16}, {"hotel_id": "HOTEL0003", "hotel_name": "Dicki Group Hotel", "year": "2020", "count": 20, "avg": 716.96, "canc": 9}, {"hotel_id": "HOTEL0003", "hotel_name": "Dicki Group Hotel", "year": "2021", "count": 104, "avg": 1084.83, "canc": 33}, {"hotel_id": "HOTEL0003", "hotel_name": "Dicki Group Hotel", "year": "2022", "count": 96, "avg": 1034.9, "canc": 33}, {"hotel_id": "HOTEL0003", "hotel_name": "Dicki Group Hotel", "year": "2023", "count": 110, "avg": 1063.7, "canc": 33}, {"hotel_id": "HOTEL0003", "hotel_name": "Dicki Group Hotel", "year": "2024", "count": 106, "avg": 966.34, "canc": 33}, {"hotel_id": "HOTEL0003", "hotel_name": "Dicki Group Hotel", "year": "2025", "count": 76, "avg": 1109.66, "canc": 32}, {"hotel_id": "HOTEL0004", "hotel_name": "Torp and Sons Hotel", "year": "2020", "count": 21, "avg": 809.55, "canc": 6}, {"hotel_id": "HOTEL0004", "hotel_name": "Torp and Sons Hotel", "year": "2021", "count": 119, "avg": 1100.44, "canc": 47}, {"hotel_id": "HOTEL0004", "hotel_name": "Torp and Sons Hotel", "year": "2022", "count": 91, "avg": 992.67, "canc": 31}, {"hotel_id": "HOTEL0004", "hotel_name": "Torp and Sons Hotel", "year": "2023", "count": 97, "avg": 1056.78, "canc": 30}, {"hotel_id": "HOTEL0004", "hotel_name": "Torp and Sons Hotel", "year": "2024", "count": 93, "avg": 1077.12, "canc": 33}, {"hotel_id": "HOTEL0004", "hotel_name": "Torp and Sons Hotel", "year": "2025", "count": 77, "avg": 1117.2, "canc": 32}, {"hotel_id": "HOTEL0005", "hotel_name": "Hackett Spinka and Grimes Hotel", "year": "2020", "count": 26, "avg": 1221.92, "canc": 14}, {"hotel_id": "HOTEL0005", "hotel_name": "Hackett Spinka and Grimes Hotel", "year": "2021", "count": 91, "avg": 952.06, "canc": 27}, {"hotel_id": "HOTEL0005", "hotel_name": "Hackett Spinka and Grimes Hotel", "year": "2022", "count": 113, "avg": 1063.1, "canc": 36}, {"hotel_id": "HOTEL0005", "hotel_name": "Hackett Spinka and Grimes Hotel", "year": "2023", "count": 91, "avg": 1068.68, "canc": 35}, {"hotel_id": "HOTEL0005", "hotel_name": "Hackett Spinka and Grimes Hotel", "year": "2024", "count": 110, "avg": 1000.42, "canc": 34}, {"hotel_id": "HOTEL0005", "hotel_name": "Hackett Spinka and Grimes Hotel", "year": "2025", "count": 94, "avg": 1016.77, "canc": 34}, {"hotel_id": "HOTEL0006", "hotel_name": "Feeney-Thiel Hotel", "year": "2020", "count": 29, "avg": 1080.09, "canc": 8}, {"hotel_id": "HOTEL0006", "hotel_name": "Feeney-Thiel Hotel", "year": "2021", "count": 119, "avg": 1077.86, "canc": 43}, {"hotel_id": "HOTEL0006", "hotel_name": "Feeney-Thiel Hotel", "year": "2022", "count": 105, "avg": 1037.55, "canc": 36}, {"hotel_id": "HOTEL0006", "hotel_name": "Feeney-Thiel Hotel", "year": "2023", "count": 97, "avg": 869.09, "canc": 35}, {"hotel_id": "HOTEL0006", "hotel_name": "Feeney-Thiel Hotel", "year": "2024", "count": 106, "avg": 1003.93, "canc": 46}, {"hotel_id": "HOTEL0006", "hotel_name": "Feeney-Thiel Hotel", "year": "2025", "count": 73, "avg": 1061.29, "canc": 25}, {"hotel_id": "HOTEL0007", "hotel_name": "Sipes Inc Hotel", "year": "2020", "count": 23, "avg": 1152.75, "canc": 5}, {"hotel_id": "HOTEL0007", "hotel_name": "Sipes Inc Hotel", "year": "2021", "count": 113, "avg": 1009.0, "canc": 36}, {"hotel_id": "HOTEL0007", "hotel_name": "Sipes Inc Hotel", "year": "2022", "count": 104, "avg": 1039.76, "canc": 33}, {"hotel_id": "HOTEL0007", "hotel_name": "Sipes Inc Hotel", "year": "2023", "count": 116, "avg": 1032.61, "canc": 41}, {"hotel_id": "HOTEL0007", "hotel_name": "Sipes Inc Hotel", "year": "2024", "count": 105, "avg": 1054.17, "canc": 28}, {"hotel_id": "HOTEL0007", "hotel_name": "Sipes Inc Hotel", "year": "2025", "count": 84, "avg": 972.82, "canc": 35}, {"hotel_id": "HOTEL0008", "hotel_name": "Graham Ratke and Mitchell Hotel", "year": "2020", "count": 20, "avg": 1223.8, "canc": 6}, {"hotel_id": "HOTEL0008", "hotel_name": "Graham Ratke and Mitchell Hotel", "year": "2021", "count": 105, "avg": 1042.48, "canc": 32}, {"hotel_id": "HOTEL0008", "hotel_name": "Graham Ratke and Mitchell Hotel", "year": "2022", "count": 98, "avg": 1040.07, "canc": 30}, {"hotel_id": "HOTEL0008", "hotel_name": "Graham Ratke and Mitchell Hotel", "year": "2023", "count": 98, "avg": 997.62, "canc": 26}, {"hotel_id": "HOTEL0008", "hotel_name": "Graham Ratke and Mitchell Hotel", "year": "2024", "count": 115, "avg": 1094.23, "canc": 38}, {"hotel_id": "HOTEL0008", "hotel_name": "Graham Ratke and Mitchell Hotel", "year": "2025", "count": 80, "avg": 977.82, "canc": 22}, {"hotel_id": "HOTEL0009", "hotel_name": "Weimann LLC Hotel", "year": "2020", "count": 28, "avg": 1166.57, "canc": 8}, {"hotel_id": "HOTEL0009", "hotel_name": "Weimann LLC Hotel", "year": "2021", "count": 112, "avg": 1189.5, "canc": 42}, {"hotel_id": "HOTEL0009", "hotel_name": "Weimann LLC Hotel", "year": "2022", "count": 108, "avg": 1048.76, "canc": 34}, {"hotel_id": "HOTEL0009", "hotel_name": "Weimann LLC Hotel", "year": "2023", "count": 119, "avg": 1071.36, "canc": 41}, {"hotel_id": "HOTEL0009", "hotel_name": "Weimann LLC Hotel", "year": "2024", "count": 92, "avg": 1040.74, "canc": 33}, {"hotel_id": "HOTEL0009", "hotel_name": "Weimann LLC Hotel", "year": "2025", "count": 71, "avg": 1010.78, "canc": 20}, {"hotel_id": "HOTEL0010", "hotel_name": "Ernser Inc Hotel", "year": "2020", "count": 23, "avg": 1272.84, "canc": 7}, {"hotel_id": "HOTEL0010", "hotel_name": "Ernser Inc Hotel", "year": "2021", "count": 73, "avg": 1110.74, "canc": 27}, {"hotel_id": "HOTEL0010", "hotel_name": "Ernser Inc Hotel", "year": "2022", "count": 98, "avg": 1014.93, "canc": 32}, {"hotel_id": "HOTEL0010", "hotel_name": "Ernser Inc Hotel", "year": "2023", "count": 92, "avg": 1057.72, "canc": 33}, {"hotel_id": "HOTEL0010", "hotel_name": "Ernser Inc Hotel", "year": "2024", "count": 90, "avg": 1017.49, "canc": 30}, {"hotel_id": "HOTEL0010", "hotel_name": "Ernser Inc Hotel", "year": "2025", "count": 82, "avg": 1150.59, "canc": 27}, {"hotel_id": "HOTEL0011", "hotel_name": "Armstrong Group Hotel", "year": "2020", "count": 16, "avg": 1021.44, "canc": 7}, {"hotel_id": "HOTEL0011", "hotel_name": "Armstrong Group Hotel", "year": "2021", "count": 111, "avg": 1152.85, "canc": 28}, {"hotel_id": "HOTEL0011", "hotel_name": "Armstrong Group Hotel", "year": "2022", "count": 87, "avg": 982.04, "canc": 24}, {"hotel_id": "HOTEL0011", "hotel_name": "Armstrong Group Hotel", "year": "2023", "count": 124, "avg": 1086.22, "canc": 44}, {"hotel_id": "HOTEL0011", "hotel_name": "Armstrong Group Hotel", "year": "2024", "count": 100, "avg": 956.38, "canc": 26}, {"hotel_id": "HOTEL0011", "hotel_name": "Armstrong Group Hotel", "year": "2025", "count": 78, "avg": 956.72, "canc": 17}, {"hotel_id": "HOTEL0012", "hotel_name": "Shields Wisoky and Padberg Hotel", "year": "2020", "count": 26, "avg": 1177.99, "canc": 9}, {"hotel_id": "HOTEL0012", "hotel_name": "Shields Wisoky and Padberg Hotel", "year": "2021", "count": 110, "avg": 1028.56, "canc": 33}, {"hotel_id": "HOTEL0012", "hotel_name": "Shields Wisoky and Padberg Hotel", "year": "2022", "count": 95, "avg": 933.87, "canc": 43}, {"hotel_id": "HOTEL0012", "hotel_name": "Shields Wisoky and Padberg Hotel", "year": "2023", "count": 91, "avg": 989.98, "canc": 36}, {"hotel_id": "HOTEL0012", "hotel_name": "Shields Wisoky and Padberg Hotel", "year": "2024", "count": 110, "avg": 1039.82, "canc": 34}, {"hotel_id": "HOTEL0012", "hotel_name": "Shields Wisoky and Padberg Hotel", "year": "2025", "count": 69, "avg": 1043.83, "canc": 17}, {"hotel_id": "HOTEL0013", "hotel_name": "Rutherford Weissnat and Barton Hotel", "year": "2020", "count": 29, "avg": 788.02, "canc": 8}, {"hotel_id": "HOTEL0013", "hotel_name": "Rutherford Weissnat and Barton Hotel", "year": "2021", "count": 95, "avg": 1006.52, "canc": 44}, {"hotel_id": "HOTEL0013", "hotel_name": "Rutherford Weissnat and Barton Hotel", "year": "2022", "count": 94, "avg": 1081.86, "canc": 30}, {"hotel_id": "HOTEL0013", "hotel_name": "Rutherford Weissnat and Barton Hotel", "year": "2023", "count": 94, "avg": 1054.0, "canc": 34}, {"hotel_id": "HOTEL0013", "hotel_name": "Rutherford Weissnat and Barton Hotel", "year": "2024", "count": 90, "avg": 998.4, "canc": 23}, {"hotel_id": "HOTEL0013", "hotel_name": "Rutherford Weissnat and Barton Hotel", "year": "2025", "count": 81, "avg": 1086.05, "canc": 27}, {"hotel_id": "HOTEL0014", "hotel_name": "Jacobs Brown and Grant Hotel", "year": "2020", "count": 17, "avg": 1258.8, "canc": 7}, {"hotel_id": "HOTEL0014", "hotel_name": "Jacobs Brown and Grant Hotel", "year": "2021", "count": 103, "avg": 993.8, "canc": 33}, {"hotel_id": "HOTEL0014", "hotel_name": "Jacobs Brown and Grant Hotel", "year": "2022", "count": 73, "avg": 977.75, "canc": 19}, {"hotel_id": "HOTEL0014", "hotel_name": "Jacobs Brown and Grant Hotel", "year": "2023", "count": 90, "avg": 1060.88, "canc": 24}, {"hotel_id": "HOTEL0014", "hotel_name": "Jacobs Brown and Grant Hotel", "year": "2024", "count": 111, "avg": 1087.96, "canc": 35}, {"hotel_id": "HOTEL0014", "hotel_name": "Jacobs Brown and Grant Hotel", "year": "2025", "count": 69, "avg": 1043.51, "canc": 30}, {"hotel_id": "HOTEL0015", "hotel_name": "Brakus LLC Hotel", "year": "2020", "count": 21, "avg": 1123.57, "canc": 8}, {"hotel_id": "HOTEL0015", "hotel_name": "Brakus LLC Hotel", "year": "2021", "count": 112, "avg": 1006.38, "canc": 32}, {"hotel_id": "HOTEL0015", "hotel_name": "Brakus LLC Hotel", "year": "2022", "count": 96, "avg": 987.66, "canc": 25}, {"hotel_id": "HOTEL0015", "hotel_name": "Brakus LLC Hotel", "year": "2023", "count": 98, "avg": 1057.44, "canc": 26}, {"hotel_id": "HOTEL0015", "hotel_name": "Brakus LLC Hotel", "year": "2024", "count": 93, "avg": 937.16, "canc": 37}, {"hotel_id": "HOTEL0015", "hotel_name": "Brakus LLC Hotel", "year": "2025", "count": 78, "avg": 1027.22, "canc": 22}, {"hotel_id": "HOTEL0016", "hotel_name": "Beer Inc Hotel", "year": "2020", "count": 17, "avg": 1013.13, "canc": 10}, {"hotel_id": "HOTEL0016", "hotel_name": "Beer Inc Hotel", "year": "2021", "count": 105, "avg": 1105.55, "canc": 32}, {"hotel_id": "HOTEL0016", "hotel_name": "Beer Inc Hotel", "year": "2022", "count": 79, "avg": 1092.38, "canc": 23}, {"hotel_id": "HOTEL0016", "hotel_name": "Beer Inc Hotel", "year": "2023", "count": 102, "avg": 1033.14, "canc": 30}, {"hotel_id": "HOTEL0016", "hotel_name": "Beer Inc Hotel", "year": "2024", "count": 90, "avg": 920.74, "canc": 37}, {"hotel_id": "HOTEL0016", "hotel_name": "Beer Inc Hotel", "year": "2025", "count": 68, "avg": 958.41, "canc": 16}, {"hotel_id": "HOTEL0017", "hotel_name": "Johnston-Reichert Hotel", "year": "2020", "count": 28, "avg": 1105.38, "canc": 7}, {"hotel_id": "HOTEL0017", "hotel_name": "Johnston-Reichert Hotel", "year": "2021", "count": 107, "avg": 958.03, "canc": 31}, {"hotel_id": "HOTEL0017", "hotel_name": "Johnston-Reichert Hotel", "year": "2022", "count": 95, "avg": 943.31, "canc": 32}, {"hotel_id": "HOTEL0017", "hotel_name": "Johnston-Reichert Hotel", "year": "2023", "count": 107, "avg": 999.47, "canc": 37}, {"hotel_id": "HOTEL0017", "hotel_name": "Johnston-Reichert Hotel", "year": "2024", "count": 104, "avg": 1017.89, "canc": 31}, {"hotel_id": "HOTEL0017", "hotel_name": "Johnston-Reichert Hotel", "year": "2025", "count": 81, "avg": 985.69, "canc": 23}, {"hotel_id": "HOTEL0018", "hotel_name": "Wiza Kutch and Treutel Hotel", "year": "2020", "count": 22, "avg": 1136.57, "canc": 7}, {"hotel_id": "HOTEL0018", "hotel_name": "Wiza Kutch and Treutel Hotel", "year": "2021", "count": 104, "avg": 1039.01, "canc": 26}, {"hotel_id": "HOTEL0018", "hotel_name": "Wiza Kutch and Treutel Hotel", "year": "2022", "count": 113, "avg": 1053.27, "canc": 30}, {"hotel_id": "HOTEL0018", "hotel_name": "Wiza Kutch and Treutel Hotel", "year": "2023", "count": 99, "avg": 994.83, "canc": 40}, {"hotel_id": "HOTEL0018", "hotel_name": "Wiza Kutch and Treutel Hotel", "year": "2024", "count": 100, "avg": 966.91, "canc": 33}, {"hotel_id": "HOTEL0018", "hotel_name": "Wiza Kutch and Treutel Hotel", "year": "2025", "count": 56, "avg": 1039.17, "canc": 20}, {"hotel_id": "HOTEL0019", "hotel_name": "Mann Inc Hotel", "year": "2020", "count": 31, "avg": 1029.89, "canc": 14}, {"hotel_id": "HOTEL0019", "hotel_name": "Mann Inc Hotel", "year": "2021", "count": 101, "avg": 1000.5, "canc": 36}, {"hotel_id": "HOTEL0019", "hotel_name": "Mann Inc Hotel", "year": "2022", "count": 90, "avg": 913.74, "canc": 24}, {"hotel_id": "HOTEL0019", "hotel_name": "Mann Inc Hotel", "year": "2023", "count": 86, "avg": 1011.71, "canc": 31}, {"hotel_id": "HOTEL0019", "hotel_name": "Mann Inc Hotel", "year": "2024", "count": 99, "avg": 952.76, "canc": 34}, {"hotel_id": "HOTEL0019", "hotel_name": "Mann Inc Hotel", "year": "2025", "count": 69, "avg": 924.62, "canc": 26}, {"hotel_id": "HOTEL0020", "hotel_name": "Shanahan Inc Hotel", "year": "2020", "count": 16, "avg": 987.15, "canc": 7}, {"hotel_id": "HOTEL0020", "hotel_name": "Shanahan Inc Hotel", "year": "2021", "count": 108, "avg": 973.13, "canc": 35}, {"hotel_id": "HOTEL0020", "hotel_name": "Shanahan Inc Hotel", "year": "2022", "count": 82, "avg": 1014.18, "canc": 30}, {"hotel_id": "HOTEL0020", "hotel_name": "Shanahan Inc Hotel", "year": "2023", "count": 112, "avg": 1097.36, "canc": 43}, {"hotel_id": "HOTEL0020", "hotel_name": "Shanahan Inc Hotel", "year": "2024", "count": 99, "avg": 1139.06, "canc": 38}, {"hotel_id": "HOTEL0020", "hotel_name": "Shanahan Inc Hotel", "year": "2025", "count": 74, "avg": 987.73, "canc": 22}];
+    const HIVE_DATA = [{"hotel_id": "HOTEL0018", "hotel_name": "Wiza Kutch and Treutel Hotel", "region": "East", "category": "Standard", "total_reservations": 100, "avg_price": 966.91, "cancelled_ratio": 0.33, "rooms": 88, "ratio": 1.1364, "rank": 1}, {"hotel_id": "HOTEL0006", "hotel_name": "Feeney-Thiel Hotel", "region": "Central", "category": "Premium", "total_reservations": 106, "avg_price": 1003.93, "cancelled_ratio": 0.433962, "rooms": 95, "ratio": 1.1158, "rank": 2}, {"hotel_id": "HOTEL0003", "hotel_name": "Dicki Group Hotel", "region": "West", "category": "Premium", "total_reservations": 106, "avg_price": 966.34, "cancelled_ratio": 0.311321, "rooms": 98, "ratio": 1.0816, "rank": 3}, {"hotel_id": "HOTEL0014", "hotel_name": "Jacobs Brown and Grant Hotel", "region": "South", "category": "Standard", "total_reservations": 111, "avg_price": 1087.96, "cancelled_ratio": 0.315315, "rooms": 111, "ratio": 1.0, "rank": 4}, {"hotel_id": "HOTEL0019", "hotel_name": "Mann Inc Hotel", "region": "South", "category": "Standard", "total_reservations": 99, "avg_price": 952.76, "cancelled_ratio": 0.343434, "rooms": 100, "ratio": 0.99, "rank": 5}, {"hotel_id": "HOTEL0002", "hotel_name": "Fahey Bradtke and Goodwin Hotel", "region": "North", "category": "Standard", "total_reservations": 103, "avg_price": 1052.92, "cancelled_ratio": 0.378641, "rooms": 105, "ratio": 0.981, "rank": 6}, {"hotel_id": "HOTEL0011", "hotel_name": "Armstrong Group Hotel", "region": "Central", "category": "Premium", "total_reservations": 100, "avg_price": 956.38, "cancelled_ratio": 0.26, "rooms": 104, "ratio": 0.9615, "rank": 7}, {"hotel_id": "HOTEL0004", "hotel_name": "Torp and Sons Hotel", "region": "Central", "category": "Luxury", "total_reservations": 93, "avg_price": 1077.12, "cancelled_ratio": 0.354839, "rooms": 108, "ratio": 0.8611, "rank": 8}, {"hotel_id": "HOTEL0008", "hotel_name": "Graham Ratke and Mitchell Hotel", "region": "South", "category": "Budget", "total_reservations": 115, "avg_price": 1094.23, "cancelled_ratio": 0.330435, "rooms": 145, "ratio": 0.7931, "rank": 9}, {"hotel_id": "HOTEL0009", "hotel_name": "Weimann LLC Hotel", "region": "North", "category": "Premium", "total_reservations": 92, "avg_price": 1040.74, "cancelled_ratio": 0.358696, "rooms": 118, "ratio": 0.7797, "rank": 10}, {"hotel_id": "HOTEL0005", "hotel_name": "Hackett Spinka and Grimes Hotel", "region": "East", "category": "Premium", "total_reservations": 110, "avg_price": 1000.42, "cancelled_ratio": 0.309091, "rooms": 156, "ratio": 0.7051, "rank": 11}, {"hotel_id": "HOTEL0007", "hotel_name": "Sipes Inc Hotel", "region": "North", "category": "Luxury", "total_reservations": 105, "avg_price": 1054.17, "cancelled_ratio": 0.266667, "rooms": 153, "ratio": 0.6863, "rank": 12}, {"hotel_id": "HOTEL0017", "hotel_name": "Johnston-Reichert Hotel", "region": "South", "category": "Premium", "total_reservations": 104, "avg_price": 1017.89, "cancelled_ratio": 0.298077, "rooms": 156, "ratio": 0.6667, "rank": 13}, {"hotel_id": "HOTEL0020", "hotel_name": "Shanahan Inc Hotel", "region": "West", "category": "Budget", "total_reservations": 99, "avg_price": 1139.06, "cancelled_ratio": 0.383838, "rooms": 154, "ratio": 0.6429, "rank": 14}, {"hotel_id": "HOTEL0015", "hotel_name": "Brakus LLC Hotel", "region": "North", "category": "Standard", "total_reservations": 93, "avg_price": 937.16, "cancelled_ratio": 0.397849, "rooms": 146, "ratio": 0.637, "rank": 15}, {"hotel_id": "HOTEL0016", "hotel_name": "Beer Inc Hotel", "region": "West", "category": "Luxury", "total_reservations": 90, "avg_price": 920.74, "cancelled_ratio": 0.411111, "rooms": 143, "ratio": 0.6294, "rank": 16}, {"hotel_id": "HOTEL0012", "hotel_name": "Shields Wisoky and Padberg Hotel", "region": "East", "category": "Standard", "total_reservations": 110, "avg_price": 1039.82, "cancelled_ratio": 0.309091, "rooms": 180, "ratio": 0.6111, "rank": 17}, {"hotel_id": "HOTEL0010", "hotel_name": "Ernser Inc Hotel", "region": "Central", "category": "Premium", "total_reservations": 90, "avg_price": 1017.49, "cancelled_ratio": 0.333333, "rooms": 148, "ratio": 0.6081, "rank": 18}, {"hotel_id": "HOTEL0001", "hotel_name": "Schinner Group Hotel", "region": "North", "category": "Standard", "total_reservations": 102, "avg_price": 981.17, "cancelled_ratio": 0.333333, "rooms": 192, "ratio": 0.5312, "rank": 19}, {"hotel_id": "HOTEL0013", "hotel_name": "Rutherford Weissnat and Barton Hotel", "region": "South", "category": "Premium", "total_reservations": 90, "avg_price": 998.4, "cancelled_ratio": 0.255556, "rooms": 176, "ratio": 0.5114, "rank": 20}];
+
+    // Code samples for Side-by-Side comparison
+    const CODE_SNIPPETS = {
+      map: {
+        leftFile: 'mapper.py',
+        rightFile: 'ReservationMapper.java',
+        left: `import sys
+
+for line in sys.stdin:
+    line = line.strip()
+    if not line or line.startswith("reservation_id"):
+        continue  # pominięcie nagłówka CSV
+
+    parts = line.split(",")
+    if len(parts) < 7: continue
+
+    try:
+        hotel_id = parts[1].strip()
+        year = parts[3].strip()[:4]
+        price = float(parts[5].strip())
+        is_canc = 1 if parts[6].strip() == "Cancelled" else 0
+
+        # Klucz i wartość rozdzielone TABULATOREM
+        print(f"{hotel_id}\t{year}\t{price},{is_canc}")
+    except (ValueError, IndexError):
+        continue`,
+        right: `public class ReservationMapper 
+    extends Mapper<LongWritable, Text, Text, Text> {
+
+    private final Text outKey = new Text();
+    private final Text outValue = new Text();
+
+    @Override
+    protected void map(LongWritable key, Text value, Context context)
+            throws IOException, InterruptedException {
+        String line = value.toString().trim();
+        if (line.isEmpty() || line.startsWith("reservation_id")) return;
+
+        String[] parts = line.split(",");
+        if (parts.length < 7) return;
+
+        try {
+            String hotelId = parts[1].trim();
+            String year = parts[3].trim().substring(0, 4);
+            double price = Double.parseDouble(parts[5].trim());
+            int isCancelled = "Cancelled".equals(parts[6].trim()) ? 1 : 0;
+
+            outKey.set(hotelId + "\t" + year);
+            outValue.set(price + "," + isCancelled);
+            context.write(outKey, outValue);
+        } catch (Exception e) { }
+    }
+}`,
+        expl: `<strong>Mapper:</strong> W Pythonie (Streaming) czytasz kolejne linie ze <code>sys.stdin</code> i emitujesz parę do <code>stdout</code> przez <code>print(klucz\twartość)</code>.<br>W Javie (Classic) dziedziczysz po generycznej klasie <code>Mapper</code>, używasz obiektów <code>Text</code> i zapisujesz przez <code>context.write()</code>.`
+      },
+      comb: {
+        leftFile: 'combiner.py',
+        rightFile: 'ReservationCombiner.java',
+        left: `import sys
+
+cur_key, count, sum_price, canc = None, 0, 0.0, 0
+
+def emit(k, c, s, ca):
+    h, y = k.split("\t")
+    # Zachowuje format wejściowy: count,sum_price,cancelled
+    print(f"{h}\t{y}\t{c},{round(s,2)},{ca}")
+
+for line in sys.stdin:
+    parts = line.strip().split("\t")
+    if len(parts) < 3: continue
+    key = f"{parts[0]}\t{parts[1]}"
+    val = parts[2].split(",")
+
+    k_c = 1 if len(val)==2 else int(val[0])
+    p = float(val[0]) if len(val)==2 else float(val[1])
+    c_flag = int(val[1]) if len(val)==2 else int(val[2])
+
+    if cur_key and cur_key != key:
+        emit(cur_key, count, sum_price, canc)
+        count, sum_price, canc = 0, 0.0, 0
+    cur_key, count, sum_price, canc = key, count+k_c, sum_price+p, canc+c_flag
+
+if cur_key: emit(cur_key, count, sum_price, canc)`,
+        right: `public class ReservationCombiner 
+    extends Reducer<Text, Text, Text, Text> {
+
+    private final Text outValue = new Text();
+
+    @Override
+    protected void reduce(Text key, Iterable<Text> values, Context context)
+            throws IOException, InterruptedException {
+        long count = 0;
+        double sumPrice = 0.0;
+        long cancelled = 0;
+
+        for (Text val : values) {
+            String[] parts = val.toString().split(",");
+            if (parts.length == 2) {
+                sumPrice += Double.parseDouble(parts[0]);
+                cancelled += Integer.parseInt(parts[1]);
+                count++;
+            } else if (parts.length == 3) {
+                count += Long.parseLong(parts[0]);
+                sumPrice += Double.parseDouble(parts[1]);
+                cancelled += Long.parseLong(parts[2]);
+            }
+        }
+        outValue.set(count + "," + sumPrice + "," + cancelled);
+        context.write(key, outValue);
+    }
+}`,
+        expl: `<strong>Combiner:</strong> Kluczowa zasada (kryterium M07) – Combiner <strong>NIE MOŻE</strong> wyliczać średniej! Musi łączyć składowe (sumę i liczność) i zachować ten sam format wyjścia co Mapper, bo może zadziałać wielokrotnie.`
+      },
+      red: {
+        leftFile: 'reducer.py',
+        rightFile: 'ReservationReducer.java',
+        left: `import sys
+
+cur_key, count, sum_price, canc = None, 0, 0.0, 0
+
+def emit(k, c, s, ca):
+    h, y = k.split("\t")
+    avg = round(s / c, 2) if c > 0 else 0.0
+    # Czysty wynik bez zbędnych napisów!
+    print(f"{h}\t{y}\t{c}\t{avg}\t{ca}")
+
+for line in sys.stdin:
+    parts = line.strip().split("\t")
+    if len(parts) < 3: continue
+    key = f"{parts[0]}\t{parts[1]}"
+    val = parts[2].split(",")
+
+    k_c = 1 if len(val)==2 else int(val[0])
+    p = float(val[0]) if len(val)==2 else float(val[1])
+    c_flag = int(val[1]) if len(val)==2 else int(val[2])
+
+    if cur_key and cur_key != key:
+        emit(cur_key, count, sum_price, canc)
+        count, sum_price, canc = 0, 0.0, 0
+    cur_key, count, sum_price, canc = key, count+k_c, sum_price+p, canc+c_flag
+
+if cur_key: emit(cur_key, count, sum_price, canc)`,
+        right: `public class ReservationReducer 
+    extends Reducer<Text, Text, Text, Text> {
+
+    private final Text outValue = new Text();
+
+    @Override
+    protected void reduce(Text key, Iterable<Text> values, Context context)
+            throws IOException, InterruptedException {
+        long count = 0;
+        double sumPrice = 0.0;
+        long cancelled = 0;
+
+        for (Text val : values) {
+            String[] p = val.toString().split(",");
+            if (p.length == 2) {
+                sumPrice += Double.parseDouble(p[0]);
+                cancelled += Integer.parseInt(p[1]);
+                count++;
+            } else {
+                count += Long.parseLong(p[0]);
+                sumPrice += Double.parseDouble(p[1]);
+                cancelled += Long.parseLong(p[2]);
+            }
+        }
+
+        BigDecimal avg = BigDecimal.valueOf(sumPrice)
+            .divide(BigDecimal.valueOf(count), 2, RoundingMode.HALF_UP);
+
+        outValue.set(count + "\t" + avg.toPlainString() + "\t" + cancelled);
+        context.write(key, outValue);
+    }
+}`,
+        expl: `<strong>Reducer:</strong> Ostatecznie wylicza średnią arytmetyczną <code>avg = sum / count</code> dopiero po przejściu przez wszystkie rekordy bieżącego klucza. Zmiana klucza wyzwala emisję i reset liczników.`
+      },
+      run: {
+        leftFile: 'run_mr.sh (Streaming)',
+        rightFile: 'run_mr.sh (Classic)',
+        left: `#!/bin/bash
+# Usuwamy katalog wynikowy (kryterium M12)
+hdfs dfs -rm -r -f "$output_dir3" 2>/dev/null || true
+
+# Uruchomienie Hadoop Streaming
+mapred streaming \
+    -files /opt/mapreduce/mapper.py,/opt/mapreduce/combiner.py,/opt/mapreduce/reducer.py \
+    -input "$input_dir1" \
+    -output "$output_dir3" \
+    -mapper "python3 mapper.py" \
+    -combiner "python3 combiner.py" \
+    -reducer "python3 reducer.py"`,
+        right: `#!/bin/bash
+# Usuwamy katalog wynikowy (kryterium M12)
+hdfs dfs -rm -r -f "$output_dir3" 2>/dev/null || true
+
+# Uruchomienie Classic Java JAR
+hadoop jar /opt/mapreduce/hotel-reservations-1.0.jar \
+    hotels.ReservationDriver \
+    "$input_dir1" \
+    "$output_dir3"`,
+        expl: `<strong>Uruchomienie:</strong> Streaming wysyła pliki skryptów opcją <code>-files</code> do węzłów klastra i odpala komendę interpretera. Classic uruchamia skompilowany plik <code>.jar</code> z klasą główną zdefiniowaną w manifeście.`
+      }
+    };
+
+    function switchCode(stage) {
+      const data = CODE_SNIPPETS[stage];
+      document.getElementById('code-left').textContent = data.left;
+      document.getElementById('code-right').textContent = data.right;
+      document.getElementById('label-left-file').textContent = data.leftFile;
+      document.getElementById('label-right-file').textContent = data.rightFile;
+      document.getElementById('code-explanation').innerHTML = data.expl;
+
+      ['map', 'comb', 'red', 'run'].forEach(s => {
+        const btn = document.getElementById('code-btn-' + s);
+        if (s === stage) {
+          btn.className = 'px-2.5 py-1 rounded bg-[var(--primary)] text-[var(--primary-foreground)] font-bold';
+        } else {
+          btn.className = 'px-2.5 py-1 rounded hover:bg-[var(--accent)]';
+        }
+      });
+    }
+
+    // Error details database
+    const ERRORS = {
+      1: {
+        title: "Brak pominięcia wiersza nagłówkowego pliku CSV",
+        rule: "Kryterium M01 (2 pkt)",
+        bad: `for line in sys.stdin:
+    parts = line.split(",")
+    price = float(parts[5]) # ❌ CRASH gdy linia to "price"`,
+        good: `for line in sys.stdin:
+    if line.startswith("reservation_id"):
+        continue # ✅ Pomija nagłówek
+    parts = line.split(",")
+    price = float(parts[5])`,
+        why: "Jeśli plik CSV ma nagłówek, pierwszy wiersz zawiera nazwy kolumn. Próba konwersji stringa 'price' na float wyrzuca wyjątek i przerywa zadanie."
+      },
+      2: {
+        title: "Wczytywanie całego zbioru do pamięci (Brak strumieniowości)",
+        rule: "Kryterium M05 (2 pkt, Wydajność)",
+        bad: `records = []
+for line in sys.stdin:
+    records.append(line.split(",")) # ❌ Zapycha RAM kontenera!
+for r in records:
+    print(...)`,
+        good: `for line in sys.stdin:
+    # ✅ Przetwarzanie rekord po rekordzie
+    parts = line.split(",")
+    print(f"{parts[1]}\t{parts[3][:4]}\t{parts[5]}")`,
+        why: "Hadoop został zaprojektowany do zbiorów danych większych niż pamięć RAM. Zapisanie rekordów do listy w Pythonie powoduje OutOfMemoryError."
+      },
+      3: {
+        title: "Liczenie średniej w Mapperze",
+        rule: "Kryterium M03 (2 pkt)",
+        bad: `# Mapper liczy gotową średnią:
+avg = price # ❌ Pojedyncza cena jako średnia!
+print(f"{hotel}\t{avg}")`,
+        good: `# Mapper emituje składowe:
+print(f"{hotel_id}\t{year}\t{price},1") # cena i liczność 1`,
+        why: "Średnia z dwóch średnich nie jest równa średniej całości (funkcja niedystrybutywna). Trzeba emitować sumę kwot i liczność osobno, aby Combiner i Reducer mogli je poprawnie połączyć."
+      },
+      4: {
+        title: "Użycie instrukcji LOAD DATA zamiast EXTERNAL TABLE",
+        rule: "Kryterium H02 (1 pkt, Wydajność)",
+        bad: `CREATE TABLE hotels (...);
+LOAD DATA INPATH '/input/hotels.csv' INTO TABLE hotels; # ❌ Usuwa plik źródłowy!`,
+        good: `CREATE EXTERNAL TABLE hotels (...)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY ','
+LOCATION '/input/hotels'; # ✅ Wskazuje miejsce danych`,
+        why: "LOAD DATA fizycznie przenosi pliki w HDFS, niszcząc strukturę katalogów źródłowych. W big data dane zostawia się tam gdzie leżą, używając EXTERNAL TABLE."
+      },
+      5: {
+        title: "Ręczne sklejanie JSON stringa zamiast SerDe",
+        rule: "Kryterium H15 (1 pkt)",
+        bad: `SELECT CONCAT('{"hotel_name":"', name, '","rank":', r, '}') # ❌ Ręczny string`,
+        good: `CREATE EXTERNAL TABLE hotel_ranking (...)
+ROW FORMAT SERDE 'org.apache.hive.hcatalog.data.JsonSerDe'
+LOCATION '...'; # ✅ Prawdziwy mechanizm SerDe`,
+        why: "Kryterium oceny wprost zabrania CONCAT lub ręcznej interpolacji stringów. Wymagane jest użycie oficjalnej klasy JsonSerDe do serializacji."
+      },
+      6: {
+        title: "Użycie ROW_NUMBER() zamiast RANK()",
+        rule: "Kryterium H09 (2 pkt)",
+        bad: `ROW_NUMBER() OVER (ORDER BY ratio DESC) # ❌ Ignoruje remisy`,
+        good: `RANK() OVER (ORDER BY (rezerwacje / pokoje) DESC) # ✅ Obsługuje remisy (1,2,2,4)`,
+        why: "Wymagania specyfikacji: hotele o identycznym wskaźniku muszą mieć tę samą pozycję w rankingu, a kolejna pozycja ma być pominięta."
+      }
+    };
+
+    function showErrorDetail(id) {
+      const e = ERRORS[id];
+      const box = document.getElementById('error-view-box');
+      box.classList.remove('hidden');
+      document.getElementById('error-detail-title').innerText = e.title;
+      document.getElementById('error-detail-rule').innerText = e.rule;
+      document.getElementById('error-bad-code').textContent = e.bad;
+      document.getElementById('error-good-code').textContent = e.good;
+      document.getElementById('error-detail-why').innerHTML = "<strong>Wyjaśnienie:</strong> " + e.why;
+      box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function selectTab(idx) {
+      for (let i = 1; i <= 5; i++) {
+        const content = document.getElementById('tab-content-' + i);
+        const btn = document.getElementById('nav-btn-' + i);
+        if (i === idx) {
+          content.classList.remove('hidden');
+          btn.classList.add('border-[var(--primary)]', 'shadow-sm');
+          btn.querySelector('div').classList.add('text-[var(--primary)]');
+        } else {
+          content.classList.add('hidden');
+          btn.classList.remove('border-[var(--primary)]', 'shadow-sm');
+          btn.querySelector('div').classList.remove('text-[var(--primary)]');
+        }
+      }
+    }
+
+    function updateMrView() {
+      const year = document.getElementById('mr-year-filter').value;
+      const q = document.getElementById('mr-search-box').value.toLowerCase().trim();
+      const body = document.getElementById('mr-table-body');
+      body.innerHTML = '';
+
+      const filtered = MR_DATA.filter(d => {
+        if (year !== 'ALL' && d.year !== year) return false;
+        if (q && !d.hotel_id.toLowerCase().includes(q) && !d.hotel_name.toLowerCase().includes(q)) return false;
+        return true;
+      });
+
+      filtered.forEach(r => {
+        const tr = document.createElement('tr');
+        tr.className = 'border-b border-[var(--border)] hover:bg-[var(--accent)]';
+        tr.innerHTML = `
+          <td class="py-1.5 px-2.5 font-bold">${r.hotel_id}</td>
+          <td class="py-1.5 px-2.5 font-medium truncate max-w-[200px]">${r.hotel_name}</td>
+          <td class="py-1.5 px-2.5 text-center"><span class="px-1.5 py-0.5 rounded bg-[var(--accent)] text-xs">${r.year}</span></td>
+          <td class="py-1.5 px-2.5 text-right font-bold">${r.count}</td>
+          <td class="py-1.5 px-2.5 text-right">${r.avg.toFixed(2)} zł</td>
+          <td class="py-1.5 px-2.5 text-right ${r.canc > 0 ? 'text-[var(--error)]' : ''}">${r.canc}</td>
+        `;
+        body.appendChild(tr);
+      });
+    }
+
+    function renderHiveView() {
+      const body = document.getElementById('hive-table-body');
+      const bars = document.getElementById('hive-bars-container');
+      const jsonBox = document.getElementById('json-raw-box');
+      body.innerHTML = '';
+      bars.innerHTML = '';
+      let jsonLines = [];
+
+      const maxRatio = HIVE_DATA[0].ratio;
+
+      HIVE_DATA.forEach((row, idx) => {
+        const tr = document.createElement('tr');
+        tr.className = 'border-b border-[var(--border)] hover:bg-[var(--accent)]';
+        const medal = row.rank === 1 ? '🥇 1' : row.rank === 2 ? '🥈 2' : row.rank === 3 ? '🥉 3' : row.rank;
+        tr.innerHTML = `
+          <td class="py-2 px-2 text-center font-bold text-[var(--primary)]">${medal}</td>
+          <td class="py-2 px-2.5 font-semibold">${row.hotel_name}</td>
+          <td class="py-2 px-2 text-center text-[var(--muted-foreground)]">${row.region}</td>
+          <td class="py-2 px-2 text-right font-bold">${row.total_reservations}</td>
+          <td class="py-2 px-2 text-right">${row.avg_price.toFixed(2)} zł</td>
+          <td class="py-2 px-2 text-right">${(row.cancelled_ratio * 100).toFixed(2)}%</td>
+          <td class="py-2 px-2 text-right">${row.rooms}</td>
+          <td class="py-2 px-2.5 text-right font-bold text-[var(--primary)]">${row.ratio.toFixed(4)}</td>
+        `;
+        body.appendChild(tr);
+
+        // Bar
+        const pct = (row.ratio / maxRatio) * 100;
+        const bdiv = document.createElement('div');
+        bdiv.innerHTML = `
+          <div class="flex justify-between text-[11px] mb-0.5">
+            <span class="truncate max-w-[320px]">#${row.rank} ${row.hotel_name} (${row.total_reservations} rez. / ${row.rooms} pokoi)</span>
+            <span class="font-mono font-bold text-[var(--primary)]">${row.ratio.toFixed(4)}</span>
+          </div>
+          <div class="w-full bg-[var(--accent)] h-3 rounded overflow-hidden">
+            <div class="h-full bar-anim" style="width: ${pct}%; background: ${idx < 3 ? 'var(--primary)' : 'var(--muted-foreground)'}"></div>
+          </div>
+        `;
+        bars.appendChild(bdiv);
+
+        // JSON line
+        jsonLines.push(JSON.stringify({
+          hotel_name: row.hotel_name,
+          total_reservations: row.total_reservations,
+          avg_price: row.avg_price,
+          cancelled_ratio: row.cancelled_ratio,
+          rooms: row.rooms,
+          rank: row.rank
+        }));
+      });
+
+      jsonBox.textContent = jsonLines.join('\n');
+    }
+
+    function copyCmd(btn) {
+      const pre = btn.parentElement.nextElementSibling;
+      navigator.clipboard.writeText(pre.textContent.trim());
+      const old = btn.textContent;
+      btn.textContent = 'Skopiowano!';
+      btn.classList.add('bg-[var(--success)]', 'text-white');
+      setTimeout(() => {
+        btn.textContent = old;
+        btn.classList.remove('bg-[var(--success)]', 'text-white');
+      }, 1500);
+    }
+
+    // Init page
+    switchCode('map');
+    updateMrView();
+    renderHiveView();
+    selectTab(1);
+  </script>
+</body>
+</html>

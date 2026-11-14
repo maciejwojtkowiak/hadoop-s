@@ -1,0 +1,20 @@
+{"hotel_name": "Wiza Kutch and Treutel Hotel", "total_reservations": 100, "avg_price": 966.91, "cancelled_ratio": 0.33, "rooms": 88, "rank": 1}
+{"hotel_name": "Feeney-Thiel Hotel", "total_reservations": 106, "avg_price": 1003.93, "cancelled_ratio": 0.433962, "rooms": 95, "rank": 2}
+{"hotel_name": "Dicki Group Hotel", "total_reservations": 106, "avg_price": 966.34, "cancelled_ratio": 0.311321, "rooms": 98, "rank": 3}
+{"hotel_name": "Jacobs Brown and Grant Hotel", "total_reservations": 111, "avg_price": 1087.96, "cancelled_ratio": 0.315315, "rooms": 111, "rank": 4}
+{"hotel_name": "Mann Inc Hotel", "total_reservations": 99, "avg_price": 952.76, "cancelled_ratio": 0.343434, "rooms": 100, "rank": 5}
+{"hotel_name": "Fahey Bradtke and Goodwin Hotel", "total_reservations": 103, "avg_price": 1052.92, "cancelled_ratio": 0.378641, "rooms": 105, "rank": 6}
+{"hotel_name": "Armstrong Group Hotel", "total_reservations": 100, "avg_price": 956.38, "cancelled_ratio": 0.26, "rooms": 104, "rank": 7}
+{"hotel_name": "Torp and Sons Hotel", "total_reservations": 93, "avg_price": 1077.12, "cancelled_ratio": 0.354839, "rooms": 108, "rank": 8}
+{"hotel_name": "Graham Ratke and Mitchell Hotel", "total_reservations": 115, "avg_price": 1094.23, "cancelled_ratio": 0.330435, "rooms": 145, "rank": 9}
+{"hotel_name": "Weimann LLC Hotel", "total_reservations": 92, "avg_price": 1040.74, "cancelled_ratio": 0.358696, "rooms": 118, "rank": 10}
+{"hotel_name": "Hackett Spinka and Grimes Hotel", "total_reservations": 110, "avg_price": 1000.42, "cancelled_ratio": 0.309091, "rooms": 156, "rank": 11}
+{"hotel_name": "Sipes Inc Hotel", "total_reservations": 105, "avg_price": 1054.17, "cancelled_ratio": 0.266667, "rooms": 153, "rank": 12}
+{"hotel_name": "Johnston-Reichert Hotel", "total_reservations": 104, "avg_price": 1017.89, "cancelled_ratio": 0.298077, "rooms": 156, "rank": 13}
+{"hotel_name": "Shanahan Inc Hotel", "total_reservations": 99, "avg_price": 1139.06, "cancelled_ratio": 0.383838, "rooms": 154, "rank": 14}
+{"hotel_name": "Brakus LLC Hotel", "total_reservations": 93, "avg_price": 937.16, "cancelled_ratio": 0.397849, "rooms": 146, "rank": 15}
+{"hotel_name": "Beer Inc Hotel", "total_reservations": 90, "avg_price": 920.74, "cancelled_ratio": 0.411111, "rooms": 143, "rank": 16}
+{"hotel_name": "Shields Wisoky and Padberg Hotel", "total_reservations": 110, "avg_price": 1039.82, "cancelled_ratio": 0.309091, "rooms": 180, "rank": 17}
+{"hotel_name": "Ernser Inc Hotel", "total_reservations": 90, "avg_price": 1017.49, "cancelled_ratio": 0.333333, "rooms": 148, "rank": 18}
+{"hotel_name": "Schinner Group Hotel", "total_reservations": 102, "avg_price": 981.17, "cancelled_ratio": 0.333333, "rooms": 192, "rank": 19}
+{"hotel_name": "Rutherford Weissnat and Barton Hotel", "total_reservations": 90, "avg_price": 998.4, "cancelled_ratio": 0.255556, "rooms": 176, "rank": 20}

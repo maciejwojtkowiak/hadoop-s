@@ -1,0 +1,21 @@
+hotel_id,name,region,category,rooms
+HOTEL0001,"Schinner Group Hotel",North,Standard,192
+HOTEL0002,"Fahey Bradtke and Goodwin Hotel",North,Standard,105
+HOTEL0003,"Dicki Group Hotel",West,Premium,98
+HOTEL0004,"Torp and Sons Hotel",Central,Luxury,108
+HOTEL0005,"Hackett Spinka and Grimes Hotel",East,Premium,156
+HOTEL0006,"Feeney-Thiel Hotel",Central,Premium,95
+HOTEL0007,"Sipes Inc Hotel",North,Luxury,153
+HOTEL0008,"Graham Ratke and Mitchell Hotel",South,Budget,145
+HOTEL0009,"Weimann LLC Hotel",North,Premium,118
+HOTEL0010,"Ernser Inc Hotel",Central,Premium,148
+HOTEL0011,"Armstrong Group Hotel",Central,Premium,104
+HOTEL0012,"Shields Wisoky and Padberg Hotel",East,Standard,180
+HOTEL0013,"Rutherford Weissnat and Barton Hotel",South,Premium,176
+HOTEL0014,"Jacobs Brown and Grant Hotel",South,Standard,111
+HOTEL0015,"Brakus LLC Hotel",North,Standard,146
+HOTEL0016,"Beer Inc Hotel",West,Luxury,143
+HOTEL0017,"Johnston-Reichert Hotel",South,Premium,156
+HOTEL0018,"Wiza Kutch and Treutel Hotel",East,Standard,88
+HOTEL0019,"Mann Inc Hotel",South,Standard,100
+HOTEL0020,"Shanahan Inc Hotel",West,Budget,154

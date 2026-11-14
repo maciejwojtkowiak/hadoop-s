@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  hadoop:
+    build: .
+    container_name: hadoop-hotels
+    hostname: hadoop-hotels
+    ports:
+      - "9870:9870"    # HDFS NameNode Web UI
+      - "8088:8088"    # YARN ResourceManager Web UI
+      - "9864:9864"    # HDFS DataNode Web UI
+      - "10002:10002"  # HiveServer2 Web UI
+    volumes:
+      - ./data:/opt/data
+      - ./mapreduce:/opt/mapreduce
+      - ./hive:/opt/hive
+      - ./scripts:/opt/scripts
+      - ./output:/opt/output
+    environment:
+      - HADOOP_HOME=/usr/local/hadoop
+    mem_limit: 4g
+    cpus: 2
